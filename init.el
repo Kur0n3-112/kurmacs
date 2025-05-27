@@ -1,3 +1,4 @@
+;;; CONFIG
 (setq inhibit-startup-message t) ;; Disable the startup Emacs message
 
 (scroll-bar-mode -1) ;; Disabe visible scroolbar
@@ -11,6 +12,11 @@
 (setq visible-bell t)
 
 (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 110)
+
+;;Set spaces instead of tabs
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 4)
+(setq indent-line-function 'insert-tab)
 
 ;;Use line numbers
 (column-number-mode)
@@ -37,24 +43,6 @@
      (?B :foreground "#98be65" :weight bold)
      (?C :foreground "#c678dd" :weight bold))
    org-agenda-block-separator 8411)
-
-(setq org-agenda-custom-commands
-      '(("v" "A better agenda view"
-         ((tags "PRIORITY=\"A\""
-                ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-                 (org-agenda-overriding-header "High-priority unfinished tasks:")))
-          (tags "PRIORITY=\"B\""
-                ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-                 (org-agenda-overriding-header "Medium-priority unfinished tasks:")))
-          (tags "PRIORITY=\"C\""
-                ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-                 (org-agenda-overriding-header "Low-priority unfinished tasks:")))
-          (tags "customtag"
-                ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-                 (org-agenda-overriding-header "Tasks marked with customtag:")))
-
-          (agenda "")
-          (alltodo "")))))
 
 ;; This makes that when you set a TODO item DONE it sets the time when you close the item.
 (setq org-log-done 'time)
@@ -106,6 +94,7 @@
                     occur-mode))
 
 
+;;; PACKAGES
 ;; Initialize package sources
 (require 'package)
 
@@ -128,9 +117,11 @@
   :diminish
   :bind (("C-s" . swiper)
          :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)	
+         ("TAB" . ivy-alt-done)
          ("C-l" . ivy-alt-done)
          ("C-j" . ivy-next-line)
+
+
          ("C-k" . ivy-previous-line)
          :map ivy-switch-buffer-map
          ("C-k" . ivy-previous-line)
@@ -160,10 +151,11 @@
 
 (use-package swiper) ;; Optional, but provides `swiper` search
 
-;; Autocompletion on M-x menu 
+;; Autocompletion on M-x menu
 (use-package ivy-rich
   :init (ivy-rich-mode 1))
 
+;; Theming with doom-themes
 (use-package doom-themes
   :ensure t
   :config
@@ -182,33 +174,41 @@
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
+;; Custom variables that Emacs set
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(org-agenda-files
-   '("~/Documentos/org/kurOrgFiles/school.org"
-     "/home/kur/Documentos/org/kurOrgFiles/ToDo.org"))
- '(package-selected-packages nil))
+ '(org-agenda-files nil)
+ '(package-selected-packages
+    '(counsel doom-themes evil-collection general helpful ivy-rich
+              org-roam)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(whitespace-missing-newline-at-eof ((t (:foreground "#4e4d49154679"))))
+ '(whitespace-newline ((t (:foreground "#4e4d49154679"))))
+ '(whitespace-space ((t (:foreground "#4e4d49154679"))))
+ '(whitespace-space-after-tab ((t (:foreground "#4e4d49154679"))))
+ '(whitespace-space-before-tab ((t (:foreground "#4e4d49154679"))))
+ '(whitespace-tab ((t (:foreground "#4e4d49154679"))))
+ '(whitespace-trailing ((t (:foreground "#4e4d49154679")))))
 
+;; Evil mode (vim kebyinds on emacs)
 (use-package general)
   :config
   (general-evil-setup t)
 
-  (general-create-definer rune/leader-keys
-    :keymaps '(normal insert visual emacs)
-    :prefix "SPC"
-    :global-prefix "C-SPC")
-  (rune/leader-keys
-    "t"  '(:ignore t :which-key "toggles")
-    "tt" '(counsel-load-theme :which-key "choose theme"))
+(general-create-definer rune/leader-keys
+  :keymaps '(normal insert visual emacs)
+  :prefix "SPC"
+  :global-prefix "C-SPC")
+(rune/leader-keys
+  "t"  '(:ignore t :which-key "toggles")
+  "tt" '(counsel-load-theme :which-key "choose theme"))
 
 (use-package evil
   :init
@@ -223,10 +223,13 @@
 
   ;; Use visual line motions even outside of visual-line-mode buffers
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  (evil-global-set-key 'motion "k" 'evil-previous-visual-line))
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
   ;; To change the default state of some buffers
-  ;;(evil-set-initial-state 'messages-buffer-mode 'normal)
-  ;;(evil-set-initial-state 'dashboard-mode 'normal))
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'org-agenda-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal))
+
 (with-eval-after-load 'evil-maps
   (define-key evil-motion-state-map (kbd "SPC") nil)
   (define-key evil-motion-state-map (kbd "RET") nil)
@@ -234,12 +237,13 @@
 
 (setq org-return-follows-link t)
 
+;; Enhance evil mode with more human keybinds
 (use-package evil-collection
   :after evil
   :config
   (evil-collection-init))
 
-
+;; Org-roam config and setup (for taking notes)
 (setq org-roam-node-display-template
       (concat "${type:15} ${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
 
@@ -295,7 +299,6 @@
                              "${title}\n#+date: %U\n#+STARTUP: inlineimages\n")
           :unnarrowed t)))
 
-
 (use-package org-roam
   :ensure t
   :custom
@@ -315,3 +318,110 @@
   ;; If using org-roam-protocol
   (require 'org-roam-protocol)
   (org-roam-setup))
+
+;;Org mode configuration
+(use-package org
+  :config
+  (setq org-ellipsis " v")
+  (setq org-agenda-files
+    '("~/Documentos/org/kurOrgFiles/school.org"
+      "~/Documentos/org/kurOrgFiles/ToDo.org")))
+
+;;Custom agenda config
+    ;;org-hide-emphasis-markers t))
+    (setq org-log-done 'time)
+    (setq org-log-into-drawer t)
+
+  (setq org-todo-keywords
+    '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+
+;;set the tags for counsel-org-tag list
+  (setq org-tag-alist
+    '((:startgroup)
+       ; Put mutually exclusive tags here
+       (:endgroup)
+       ("@errand" . ?E)
+       ("@home" . ?H)
+       ("@work" . ?W)
+       ("agenda" . ?a)
+       ("planning" . ?p)
+       ("publish" . ?P)
+       ("batch" . ?b)
+       ("note" . ?n)
+       ("idea" . ?i)))
+
+;; Configure custom agenda views
+  (setq org-agenda-custom-commands
+   '(("d" "Dashboard"
+     ((agenda "" ((org-deadline-warning-days 7)))
+      (todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))
+      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+
+    ("n" "Next Tasks"
+     ((todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))))
+
+    ("W" "Work Tasks" tags-todo "+work-email")
+
+    ;; Low-effort next actions
+    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+     ((org-agenda-overriding-header "Low Effort Tasks")
+      (org-agenda-max-todos 20)
+      (org-agenda-files org-agenda-files)))
+
+    ("w" "Workflow Status"
+     ((todo "WAIT"
+            ((org-agenda-overriding-header "Waiting on External")
+             (org-agenda-files org-agenda-files)))
+      (todo "REVIEW"
+            ((org-agenda-overriding-header "In Review")
+             (org-agenda-files org-agenda-files)))
+      (todo "PLAN"
+            ((org-agenda-overriding-header "In Planning")
+             (org-agenda-todo-list-sublevels nil)
+             (org-agenda-files org-agenda-files)))
+      (todo "BACKLOG"
+            ((org-agenda-overriding-header "Project Backlog")
+             (org-agenda-todo-list-sublevels nil)
+             (org-agenda-files org-agenda-files)))
+      (todo "READY"
+            ((org-agenda-overriding-header "Ready for Work")
+             (org-agenda-files org-agenda-files)))
+      (todo "ACTIVE"
+            ((org-agenda-overriding-header "Active Projects")
+             (org-agenda-files org-agenda-files)))
+      (todo "COMPLETED"
+            ((org-agenda-overriding-header "Completed Projects")
+             (org-agenda-files org-agenda-files)))
+      (todo "CANC"
+            ((org-agenda-overriding-header "Cancelled Projects")
+             (org-agenda-files org-agenda-files)))))
+   ("v" "A better agenda view"
+      ((tags "PRIORITY=\"A\""
+             ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+              (org-agenda-overriding-header "High-priority unfinished tasks:")))
+       (tags "PRIORITY=\"B\""
+             ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+              (org-agenda-overriding-header "Medium-priority unfinished tasks:")))
+       (tags "PRIORITY=\"C\""
+             ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+              (org-agenda-overriding-header "Low-priority unfinished tasks:")))
+       (tags "customtag"
+             ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+              (org-agenda-overriding-header "Tasks marked with customtag:")))
+
+       (agenda "")
+       (alltodo "")))))
+
+;; Helpful package to more indeep help utility
+(use-package helpful
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))
