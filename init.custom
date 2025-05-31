@@ -1,0 +1,21 @@
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(counsel doom-themes evil-collection general harpoon helpful ivy-rich
+             ledger-mode lsp-pyright lsp-ui magit org-roam projectile
+             rust-mode rustic)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(whitespace-missing-newline-at-eof ((t (:foreground "#4e4d49154679"))))
+ '(whitespace-newline ((t (:foreground "#4e4d49154679"))))
+ '(whitespace-space ((t (:foreground "#4e4d49154679"))))
+ '(whitespace-space-after-tab ((t (:foreground "#4e4d49154679"))))
+ '(whitespace-space-before-tab ((t (:foreground "#4e4d49154679"))))
+ '(whitespace-tab ((t (:foreground "#4e4d49154679"))))
+ '(whitespace-trailing ((t (:foreground "#4e4d49154679")))))

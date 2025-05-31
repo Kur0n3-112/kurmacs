@@ -1,4 +1,5 @@
 ;;; CONFIG
+(setq custom-file "~/.config/emacs/init.custom") ;; Loads all the custom variable crap on this file
 (setq inhibit-startup-message t) ;; Disable the startup Emacs message
 
 (scroll-bar-mode -1) ;; Disabe visible scroolbar
@@ -22,6 +23,26 @@
 (column-number-mode)
 (global-display-line-numbers-mode t)
 (setq display-line-numbers-type 'relative)  ;; Activate relative numbers on lines
+
+;;Set clipboard for term emacs
+(when (executable-find "cliphist") ;;Ensure·we're·in·a·Wayland·session·with·cliphist·available
+
+;;·Copy·to·clipboard·using·cliphist
+  (defun copy-to-clipboard (start end)
+    (interactive "r")
+    (let ((selection (buffer-substring-no-properties start end)))
+      (call-process-region start end "cliphist" nil nil nil "store")
+      (message "Copied to clipboard!")))
+
+;;·Paste·from·clipboard·using·cliphist
+  (defun paste-from-clipboard ()
+    (interactive)
+    (let ((output (shell-command-to-string "cliphist list | head -n 1 | cliphist decode")))
+    (insert output)))
+
+;;·Bind·to·keys
+(global-set-key (kbd "C-c M-y") 'copy-to-clipboard)
+(global-set-key (kbd "C-c M-p") 'paste-from-clipboard))
 
 ;;Truncate lines
 (defun my-c-mode-config ()
@@ -93,6 +114,9 @@
                     dired-mode
                     occur-mode))
 
+;; Ido for autocompletion
+(ido-mode 1)
+(ido-everywhere 1)
 
 ;;; PACKAGES
 ;; Initialize package sources
@@ -174,29 +198,6 @@
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
-;; Custom variables that Emacs set
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(org-agenda-files nil)
- '(package-selected-packages
-    '(counsel doom-themes evil-collection general helpful ivy-rich
-              org-roam)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(whitespace-missing-newline-at-eof ((t (:foreground "#4e4d49154679"))))
- '(whitespace-newline ((t (:foreground "#4e4d49154679"))))
- '(whitespace-space ((t (:foreground "#4e4d49154679"))))
- '(whitespace-space-after-tab ((t (:foreground "#4e4d49154679"))))
- '(whitespace-space-before-tab ((t (:foreground "#4e4d49154679"))))
- '(whitespace-tab ((t (:foreground "#4e4d49154679"))))
- '(whitespace-trailing ((t (:foreground "#4e4d49154679")))))
-
 ;; Evil mode (vim kebyinds on emacs)
 (use-package general)
   :config
@@ -236,6 +237,7 @@
   (define-key evil-motion-state-map (kbd "TAB") nil))
 
 (setq org-return-follows-link t)
+(evil-set-undo-system 'undo-redo)
 
 ;; Enhance evil mode with more human keybinds
 (use-package evil-collection
@@ -325,7 +327,8 @@
   (setq org-ellipsis " v")
   (setq org-agenda-files
     '("~/Documentos/org/kurOrgFiles/school.org"
-      "~/Documentos/org/kurOrgFiles/ToDo.org")))
+      "~/Documentos/org/kurOrgFiles/ToDo.org"
+      "~/Documentos/org/kurOrgFiles/Week.org")))
 
 ;;Custom agenda config
     ;;org-hide-emphasis-markers t))
@@ -425,3 +428,141 @@
   ([remap describe-command] . helpful-command)
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
+
+;; Setup ledger
+(use-package ledger-mode
+  :ensure t
+  :init
+  (setq ledger-clear-whole-transactions 1)
+
+  :config
+  (add-to-list 'evil-emacs-state-modes 'ledger-report-mode)
+  :mode "\\.dat\\'")
+
+;; LSP Mode
+(use-package lsp-mode
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-c l")
+  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+         (c-mode . lsp)
+         (rust-mode . lsp)
+         (python-mode . lsp)
+         ;; if you want which-key integration
+         (lsp-mode . lsp-enable-which-key-integration))
+  :custom
+    ;; What to use when checking on-save. "check" is default, I prefer clippy
+    (lsp-rust-analyzer-cargo-watch-command "clippy")
+    ;;(lsp-eldoc-render-all t)
+    (lsp-idle-delay 0.6)
+    ;; Enable/disable the hints as you prefer:
+    (lsp-inlay-hint-enable t)
+    ;; These are optional configurations. See https://emacs-lsp.github.io/lsp-mode/page/lsp-rust-analyzer/#lsp-rust-analyzer-display-chaining-hints for a full list
+    (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
+    (lsp-rust-analyzer-display-chaining-hints t)
+    (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
+    (lsp-rust-analyzer-display-closure-return-type-hints t)
+    (lsp-rust-analyzer-display-parameter-hints nil)
+    (lsp-rust-analyzer-display-reborrow-hints nil)
+  :commands lsp)
+
+;;> OPTIONALLY
+(use-package lsp-ui
+    :hook (lsp-mode . lsp-ui-mode)
+    :custom
+    (lsp-ui-doc-position 'bottom))
+;; if you are helm user
+;;(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+;; if you are ivy user
+;(use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
+;;(use-package lsp-treemacs :commands lsp-treemacs-errors-list)
+
+;; optionally if you want to use debugger
+;(use-package dap-mode)
+;; (use-package dap-LANGUAGE) to load the dap adapter for your language
+
+;; optional if you want which-key integration
+;;(use-package which-key
+;;    :config
+;;    (which-key-mode))
+
+
+;; Rust mode
+(use-package rust-mode)
+
+(use-package rustic ;; Better rust mode
+  :ensure
+  :bind (:map rustic-mode-map
+              ("M-j" . lsp-ui-imenu)
+              ("M-?" . lsp-find-references)
+              ("C-c C-c l" . flycheck-list-errors)
+              ("C-c C-c a" . lsp-execute-code-action)
+              ("C-c C-c r" . lsp-rename)
+              ("C-c C-c q" . lsp-workspace-restart)
+              ("C-c C-c Q" . lsp-workspace-shutdown)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
+  ;; Uncomment for less flashiness
+  ;; (setq lsp-eldoc-hook nil)
+  ;; (setq lsp-enable-symbol-highlighting nil)
+  ;; (setq lsp-signature-auto-activate nil)
+
+  ;; Comment to disable rustfmt on save
+  ;;(setq rustic-format-on-save t)
+  (add-hook 'rustic-mode-hook 'rk/rustic-mode-hook))
+
+(defun rk/rustic-mode-hook ()
+  ;; So that run C-c C-c C-r works without having to confirm, but don't try to
+  ;; save rust buffers that are not file visiting. Once
+  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+  ;; no longer be necessary.
+  (when buffer-file-name
+    (setq-local buffer-save-without-query t))
+  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
+
+;; Projectile
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  (when (file-directory-p "~/Documentos/03_Code")
+    (setq projectile-project-search-path '("~/Documentos/03_Code")))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+;;(use-package counsel-projectile
+;;    :config(counsel-projectile-mode))
+
+;; Harpoon
+(use-package harpoon)
+(global-set-key (kbd "C-c a") 'harpoon-quick-menu-hydra)
+(global-set-key (kbd "C-c h a") 'harpoon-add-file)
+
+;; And the vanilla commands
+(global-set-key (kbd "C-c h f") 'harpoon-toggle-file)
+(global-set-key (kbd "C-c h h") 'harpoon-toggle-quick-menu)
+(global-set-key (kbd "C-c h c") 'harpoon-clear)
+(global-set-key (kbd "C-c h 1") 'harpoon-go-to-1)
+(global-set-key (kbd "C-c h 2") 'harpoon-go-to-2)
+(global-set-key (kbd "C-c h 3") 'harpoon-go-to-3)
+(global-set-key (kbd "C-c h 4") 'harpoon-go-to-4)
+(global-set-key (kbd "C-c h 5") 'harpoon-go-to-5)
+(global-set-key (kbd "C-c h 6") 'harpoon-go-to-6)
+(global-set-key (kbd "C-c h 7") 'harpoon-go-to-7)
+(global-set-key (kbd "C-c h 8") 'harpoon-go-to-8)
+
+;; Magit
+(use-package magit
+    :commands (magit-status magit-get-current-branch)
+    :custom
+    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+;; Python lsp
+(use-package lsp-pyright
+  :ensure t
+  :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp))))  ; or lsp-deferred
