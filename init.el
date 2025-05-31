@@ -45,11 +45,14 @@
 (global-set-key (kbd "C-c M-p") 'paste-from-clipboard))
 
 ;;Truncate lines
-(defun my-c-mode-config ()
-  "Called in `c-mode-hook'."
-  (setq truncate-lines nil))
+(setq-default truncate-lines nil)
+(setq-default global-visual-line-mode nil)
 
-(add-hook 'c-mode-hook #'my-c-mode-config)
+(add-hook 'org-mode-hook (lambda () (setq truncate-lines nil))) ;; for org mode
+;;(defun my-c-mode-config ()
+;;  "Called in `c-mode-hook'."
+;;  (setq truncate-lines nil))
+;;(add-hook 'c-mode-hook #'my-c-mode-config)
 
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -253,47 +256,47 @@
        '(("d" "default" plain
           "%?"
           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                             "${title}\n")
+                             "#+title: ${title}\n")
           :unnarrowed t)
          ("i" "LearningNotesInternet" plain
           "%?"
           :if-new (file+head "LearningNotesInternet/%<%Y%m%d%H%M%S>-${slug}.org"
-                             "${title}\n#+date: %U\n#+STARTUP: inlineimages\n\n- tags :: \n- source :: \n")
+                             "#+title: ${title}\n#+date: %U\n#+STARTUP: inlineimages\n\n- tags :: \n- source :: \n")
           :unnarrowed t)
          ("n" "notebook" plain
           "%?"
           :if-new (file+head "notebook/%<%Y%m%d%H%M%S>-${slug}.org"
-                             "${title}\n#+date: %U\n")
+                             "#+title: ${title}\n#+date: %U\n")
           :unnarrowed t)
          ("c" "Ciberseguridad" plain
           "%?"
           :if-new (file+head "Ciberseguridad/General/%<%Y%m%d%H%M%S>-${slug}.org"
-                             "${title}\n#+date: %U\n")
+                             "#+title: ${title}\n#+date: %U\n")
           :unnarrowed t)
          ("h" "Hack4U" plain
           "%?"
           :if-new (file+head "Ciberseguridad/Hack4u/IntroduccionHacking/%<%Y%m%d%H%M%S>-${slug}.org"
-                             "${title}\n#+date: %U\n#+STARTUP: inlineimages\n")
+                             "#+title: ${title}\n#+date: %U\n#+STARTUP: inlineimages\n")
           :unnarrowed t)
          ("p" "ElRinconDelHacker" plain
           "%?"
           :if-new (file+head "Ciberseguridad/elRinconDelHacker/PreparacionParaLaCertificacionEJPTV2/%<%Y%m%d%H%M%S>-${slug}.org"
-                             "${title}\n#+date: %U\n#+STARTUP: inlineimages\n")
+                             "#+title: ${title}_elrincondelhacker_preparacionescertificacioneejptv2\n#+date: %U\n#+STARTUP: inlineimages\n")
           :unnarrowed t)
          ("l" "linuxThings" plain
           "%?"
           :if-new (file+head "linuxThings/%<%Y%m%d%H%M%S>-${slug}.org"
-                             "${title}\n#+date: %U\n")
+                             "#+title: ${title}\n#+date: %U\n")
           :unnarrowed t)
          ("y" "python" plain
           "%?"
           :if-new (file+head "coding/python/%<%Y%m%d%H%M%S>-${slug}.org"
-                             "${title}\n#+date: %U\n")
+                             "#+title: ${title}\n#+date: %U\n")
           :unnarrowed t)
          ("j" "python|Django" plain
           "%?"
           :if-new (file+head "coding/python/django/%<%Y%m%d%H%M%S>-${slug}.org"
-                             "${title}\n#+date: %U\n")
+                             "#+title: ${title}\n#+date: %U\n")
           :unnarrowed t)
          ("t" "linuxThingsCommands" plain
           "%?"
